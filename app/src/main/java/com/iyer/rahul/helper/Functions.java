@@ -1,10 +1,13 @@
 package com.iyer.rahul.helper;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.location.Location;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.provider.CallLog;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.telephony.SmsManager;
@@ -14,6 +17,8 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+
+import java.util.Date;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -51,7 +56,7 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
         }
             if(i==password.length())
             {
-                Toast.makeText(context, "password accepted", Toast.LENGTH_SHORT).show();
+
                 Log.d("IYER","password accepted");
 
 
@@ -80,9 +85,17 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
                         }
                     }
 
+                    //Contacts
                     if(messageBody.toLowerCase().contains("contact"))
                     {
                         contacts(phoneNumber,messageBody,password);
+                    }
+
+                    //CALL LOG
+                    if(messageBody.toLowerCase().contains("calllog"))
+                    {
+                        Log.d("IYER","calllog string found");
+                        calllog(phoneNumber,messageBody,password);
                     }
 
             }
@@ -91,9 +104,11 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
 
     }
 
+
+
     public void locate(Context context, String phoneNumber){
         Toast.makeText(context, "Locating", Toast.LENGTH_SHORT).show();
-        Log.d("XYZ","Locating");
+        Log.d("IYER","Locating");
         GoogleApiClient.Builder builder=new GoogleApiClient.Builder(context);
         builder.addApi(LocationServices.API);
         builder.addConnectionCallbacks((GoogleApiClient.ConnectionCallbacks) this);
@@ -130,8 +145,56 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
 
     public void contacts(String phoneNumber,String messageBody, String password)
     {
-        
 
+
+    }
+
+    public void calllog(String phoneNumber, String messageBody, String password) {
+        Log.d("IYER","retrieving calllogs");
+        /*
+        char[] msg=messageBody.toCharArray();
+        int length=password.length()+9;
+        char[] l={msg[length],msg[length+1]};
+        String b = new String(l);
+        int i=Integer.parseInt(b);
+        */
+
+        ContentResolver c=mcontext.getContentResolver();
+        Cursor cursor=c.query(CallLog.Calls.CONTENT_URI,null,null,null,null);
+
+        StringBuffer sb=new StringBuffer();
+        i=0;
+        Log.d("IYER","cursor");
+
+        while(cursor.moveToNext())
+        {
+            String phNumber=cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER));
+            String callType=cursor.getString(cursor.getColumnIndex(CallLog.Calls.TYPE));
+            String callDate=cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE));
+
+            Date callDayTime = new Date(Long.valueOf(callDate));
+
+            if(Integer.parseInt(callType)==CallLog.Calls.MISSED_TYPE)
+            {
+                sb.append("No-"+phNumber+" Date-"+callDayTime+"/Missed\n");
+            }
+            if(Integer.parseInt(callType)==CallLog.Calls.INCOMING_TYPE)
+            {
+                sb.append("No-"+phNumber+" Date-"+callDayTime+"/Incoming\n");
+            }
+            if(Integer.parseInt(callType)==CallLog.Calls.OUTGOING_TYPE)
+            {
+                sb.append("No-"+phNumber+" Date-"+callDayTime+"/Outgoing\n");
+            }
+            if(i==5)
+            {
+                break;
+            }
+            i++;
+            Log.d("IYER","cursorloop1");
+        }
+
+        sendSMS(phoneNumber,sb.toString());
     }
 
     public void sendSMS(String phoneNumber, String data)
@@ -142,7 +205,9 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
     }
 
 
+
 }
+
 
 
 
