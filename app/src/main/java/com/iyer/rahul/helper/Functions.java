@@ -7,6 +7,7 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -69,6 +70,7 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
                         {
 
                             mp.start();
+                            sendSMS(phoneNumber,"Succesfully Rung");
                         }
 
                         if(messageBody.toLowerCase().contains("stop"))
@@ -76,6 +78,11 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
                             mp.pause();
                             mp.stop();
                         }
+                    }
+
+                    if(messageBody.toLowerCase().contains("contact"))
+                    {
+                        contacts(phoneNumber,messageBody,password);
                     }
 
             }
@@ -120,6 +127,21 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+
+    public void contacts(String phoneNumber,String messageBody, String password)
+    {
+        
+
+    }
+
+    public void sendSMS(String phoneNumber, String data)
+    {
+        SmsManager smsManager = SmsManager.getDefault();
+        smsManager.sendTextMessage(phoneNumber, null, data, null, null);
+
+    }
+
+
 }
 
 
