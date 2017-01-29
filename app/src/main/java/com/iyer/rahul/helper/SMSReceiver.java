@@ -16,6 +16,7 @@ public class SMSReceiver extends BroadcastReceiver {
 
     public void onReceive(Context context, Intent intent) {
 
+        Log.d("XYZ","SMS Received");
         Toast.makeText(context, "SMS received", Toast.LENGTH_SHORT).show();
 
         if (intent.getAction() != null && (intent.getAction().equals(SMS_RECEIVED))) {
