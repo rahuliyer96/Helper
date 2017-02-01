@@ -176,6 +176,9 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
         String b = new String(l);
         int i=Integer.parseInt(b);
         */
+        String phNumber="";
+        String callType="";
+        String callDate="";
 
         ContentResolver c=mcontext.getContentResolver();
         Cursor cursor=c.query(CallLog.Calls.CONTENT_URI,null,null,null,null);
@@ -184,12 +187,19 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
         i=0;
         Log.d("IYER","cursor");
 
-        while(cursor.moveToNext())
+
+        while(i<5)
         {
             Log.d("IYER","loop "+i);
-            String phNumber=cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER));
-            String callType=cursor.getString(cursor.getColumnIndex(CallLog.Calls.TYPE));
-            String callDate=cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE));
+            try {
+                 phNumber = cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER));
+                 callType = cursor.getString(cursor.getColumnIndex(CallLog.Calls.TYPE));
+                 callDate = cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE));
+            }
+            catch(Exception e)
+            {
+                Log.d("IYER",e.getMessage());
+            }
 
             Log.d("IYER","loop1 "+i);
             Date callDayTime = new Date(Long.valueOf(callDate));
@@ -206,10 +216,7 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
             {
                 sb.append("No-"+phNumber+" Date-"+callDayTime+"/Outgoing\n");
             }
-            if(i==5)
-            {
-                break;
-            }
+
             i++;
             Log.d("IYER","cursorloop1");
         }
