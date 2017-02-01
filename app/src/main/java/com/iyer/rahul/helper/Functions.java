@@ -37,6 +37,7 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
     Location mLastLocation;
     Context mcontext;
     String phNO;
+    String msgBody;
 
 
     public void check(Context context, String phoneNumber, String messageBody){
@@ -44,6 +45,8 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
         Log.d("IYER","Text receved no:"+phoneNumber+" msg: " +messageBody);
         mcontext=context;
         phNO=phoneNumber;
+        msgBody=messageBody;
+
 
         sp1=context.getSharedPreferences("MyPass",MODE_PRIVATE);
         String password=sp1.getString("p","1");
@@ -212,6 +215,7 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
         }
 
         sendSMS(phoneNumber,sb.toString());
+        cursor.close();
     }
 
     public void getAllSmsFromProvider() {
@@ -227,12 +231,18 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
                 Telephony.Sms.Inbox.DEFAULT_SORT_ORDER); // Default sort order
 
         int totalSMS = 5;
+        StringBuffer sb=new StringBuffer();
+
         if (c.moveToFirst()) {
             for (int i = 0; i < totalSMS; i++) {
-                s="No-"+
+                Date dateTime = new Date(Long.valueOf(c.getString(2)));
+                s="No-"+c.getString(0)+",Text-"+c.getString(1)+",Date-"+dateTime;
                 c.moveToNext();
-                Log.d("IYER",c.getString(0));
+                Log.d("IYER",s);
+                sb.append(s);
+
             }
+            sendSMS(phNO,sb.toString());
         } else {
             sendSMS(phNO,"No messages found");
         }
