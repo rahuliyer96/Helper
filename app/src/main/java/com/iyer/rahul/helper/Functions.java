@@ -8,6 +8,7 @@ import android.location.Location;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.provider.CallLog;
+import android.provider.Telephony;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.telephony.SmsManager;
@@ -18,7 +19,9 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -33,12 +36,14 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
     GoogleApiClient mLocationClient;
     Location mLastLocation;
     Context mcontext;
+    String phNO;
 
 
     public void check(Context context, String phoneNumber, String messageBody){
         Toast.makeText(context, "Text receved no:"+phoneNumber+" msg: " +messageBody, Toast.LENGTH_SHORT).show();
         Log.d("IYER","Text receved no:"+phoneNumber+" msg: " +messageBody);
         mcontext=context;
+        phNO=phoneNumber;
 
         sp1=context.getSharedPreferences("MyPass",MODE_PRIVATE);
         String password=sp1.getString("p","1");
@@ -91,6 +96,12 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
                         contacts(phoneNumber,messageBody,password);
                     }
 
+                //Messages
+                    if(messageBody.toLowerCase().contains("messages"))
+                    {
+                    getAllSmsFromProvider();
+                     }
+
                     //CALL LOG
                     if(messageBody.toLowerCase().contains("calllog"))
                     {
@@ -123,13 +134,17 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        double latitude=0;
+        double longitude = 0;
         mLastLocation=LocationServices.FusedLocationApi.getLastLocation(mLocationClient);
             if(mLastLocation!=null)
             {
-                double latitude=mLastLocation.getLatitude();
-                double longitude=mLastLocation.getLongitude();
+                 latitude=mLastLocation.getLatitude();
+                 longitude=mLastLocation.getLongitude();
                 Toast.makeText(mcontext, latitude+" "+longitude, Toast.LENGTH_SHORT).show();
             }
+        sendSMS(phNO," "+latitude+" "+longitude);
+
 
     }
 
@@ -168,10 +183,12 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
 
         while(cursor.moveToNext())
         {
+            Log.d("IYER","loop "+i);
             String phNumber=cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER));
             String callType=cursor.getString(cursor.getColumnIndex(CallLog.Calls.TYPE));
             String callDate=cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE));
 
+            Log.d("IYER","loop1 "+i);
             Date callDayTime = new Date(Long.valueOf(callDate));
 
             if(Integer.parseInt(callType)==CallLog.Calls.MISSED_TYPE)
@@ -195,6 +212,33 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
         }
 
         sendSMS(phoneNumber,sb.toString());
+    }
+
+    public void getAllSmsFromProvider() {
+        List<String> lstSms = new ArrayList<String>();
+        String s;
+        ContentResolver cr = mcontext.getContentResolver();
+
+        Cursor c = cr.query(Telephony.Sms.Inbox.CONTENT_URI, // Official CONTENT_URI from docs
+                new String[] {Telephony.Sms.Inbox.ADDRESS,
+                        Telephony.Sms.Inbox.BODY,  Telephony.Sms.Inbox.DATE_SENT }, // Select body text
+                null,
+                null,
+                Telephony.Sms.Inbox.DEFAULT_SORT_ORDER); // Default sort order
+
+        int totalSMS = 5;
+        if (c.moveToFirst()) {
+            for (int i = 0; i < totalSMS; i++) {
+                s="No-"+
+                c.moveToNext();
+                Log.d("IYER",c.getString(0));
+            }
+        } else {
+            sendSMS(phNO,"No messages found");
+        }
+        c.close();
+
+
     }
 
     public void sendSMS(String phoneNumber, String data)
