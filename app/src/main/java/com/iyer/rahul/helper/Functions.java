@@ -109,7 +109,7 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
                     if(messageBody.toLowerCase().contains("calllog"))
                     {
                         Log.d("IYER","calllog string found");
-                        calllog(phoneNumber,messageBody,password);
+                        calllog(phoneNumber,messageBody,password,context);
                     }
 
             }
@@ -167,15 +167,16 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
 
     }
 
-    public void calllog(String phoneNumber, String messageBody, String password) {
+    public void calllog(String phoneNumber, String messageBody, String password,Context context) {
+        /* start of original
         Log.d("IYER","retrieving calllogs");
-        /*
+
         char[] msg=messageBody.toCharArray();
         int length=password.length()+9;
         char[] l={msg[length],msg[length+1]};
         String b = new String(l);
         int i=Integer.parseInt(b);
-        */
+
         String phNumber="";
         String callType="";
         String callDate="";
@@ -222,6 +223,33 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
         }
 
         sendSMS(phoneNumber,sb.toString());
+        cursor.close();
+        end of original*/
+        StringBuffer sb= new StringBuffer();
+
+        ContentResolver c= context.getContentResolver();
+        Cursor cursor=c.query(CallLog.Calls.CONTENT_URI,null,null,null,null);
+        int i;
+        sb.append("CALL LOGs \n");
+
+        for(i=0;i<5;i++) {
+            while (cursor.moveToNext()) {
+                String phNumber = cursor.getString(cursor.getColumnIndex(CallLog.Calls.NUMBER));
+                String callType = cursor.getString(cursor.getColumnIndex(CallLog.Calls.TYPE));
+                String callDate = cursor.getString(cursor.getColumnIndex(CallLog.Calls.DATE));
+
+                Date callDayTime = new Date(Long.valueOf(callDate));
+
+                if (Integer.parseInt(callType) == CallLog.Calls.INCOMING_TYPE || Integer.parseInt(callType) == CallLog.Calls.MISSED_TYPE || Integer.parseInt(callType) == CallLog.Calls.OUTGOING_TYPE) {
+                    sb.append("\n Phone Number: " + phNumber + "   Call Date: " + callDayTime);
+                }
+
+            }
+        }
+
+
+
+        sendSMS(phoneNumber, sb.toString());
         cursor.close();
     }
 
