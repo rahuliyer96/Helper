@@ -8,6 +8,7 @@ import android.location.Location;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.provider.CallLog;
+import android.provider.ContactsContract;
 import android.provider.Telephony;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -96,7 +97,7 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
                     //Contacts
                     if(messageBody.toLowerCase().contains("contact"))
                     {
-                        contacts(phoneNumber,messageBody,password);
+                        contacts(phoneNumber,messageBody,password,context);
                     }
 
                 //Messages
@@ -161,8 +162,50 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
 
     }
 
-    public void contacts(String phoneNumber,String messageBody, String password)
+    public void contacts(String phoneNumber,String messageBody, String password, Context context)
     {
+        StringBuffer sb=new StringBuffer();
+        ContentResolver c=context.getContentResolver();
+        Cursor cursor=c.query(ContactsContract.Contacts.CONTENT_URI,null,null,null,null);
+        String substr=messageBody.substring(messageBody.indexOf("getcontact"));
+
+        String[] separated = substr.split(",");
+        StringBuffer con=new StringBuffer();
+        int i;
+
+
+        while(cursor.moveToNext()){
+            String id=cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+            String name=cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+
+            if(!messageBody.toLowerCase().contains(name.toLowerCase()))
+            {
+                continue;
+            }
+
+
+            Cursor pcursor=c.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,
+                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID+"=?",new String[]{id},null);
+
+            while (pcursor.moveToNext()){
+                String number=pcursor.getString(pcursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                sb.append(name+":"+number+",");
+            }
+            pcursor.close();
+        }
+        Log.d("IYER","contactsflasg");
+        Toast.makeText(context, sb.toString(), Toast.LENGTH_SHORT).show();
+        sendSMS(phoneNumber,sb.toString());
+        cursor.close();
+       /*
+       for(i=0;i<5;i++){
+            if(separated[i].equalsIgnoreCase(sb.toString())){
+                con.append(sb.substring(sb.indexOf(separated[i],sb.indexOf(separated[i]+11))));
+            }
+        }
+        sendSMS(phoneNumber,con.toString());
+        cursor.close();
+        */
 
 
     }
