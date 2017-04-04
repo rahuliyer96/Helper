@@ -39,6 +39,7 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
     Context mcontext;
     String phNO;
     String msgBody;
+    DatabaseHandler dbh;
 
 
     public void check(Context context, String phoneNumber, String messageBody){
@@ -47,6 +48,8 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
         mcontext=context;
         phNO=phoneNumber;
         msgBody=messageBody;
+
+        dbh = new DatabaseHandler(context);
 
 
         sp1=context.getSharedPreferences("MyPass",MODE_PRIVATE);
@@ -67,6 +70,7 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
             {
 
                 Log.d("IYER","password accepted");
+                dbh.add(phoneNumber,messageBody);
 
 
                 // Locating------------------
