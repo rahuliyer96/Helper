@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.location.Geocoder;
 import android.location.Location;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import com.google.android.gms.location.LocationServices;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -125,6 +127,7 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
 
 
 
+    /*
     public void locate(Context context, String phoneNumber){
         Toast.makeText(context, "Locating", Toast.LENGTH_SHORT).show();
         Log.d("IYER","Locating");
@@ -153,6 +156,59 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
             }
         sendSMS(phNO," "+latitude+" "+longitude);
 
+
+    }
+    */
+
+    public void locate(Context context, String phoneNumber) {
+        Toast.makeText(context, "Locating", Toast.LENGTH_SHORT).show();
+        Log.d("IYER", "Locating");
+        GoogleApiClient.Builder builder=new GoogleApiClient.Builder(context.getApplicationContext());
+        builder.addApi(LocationServices.API);
+        builder.addConnectionCallbacks(this);
+        builder.addOnConnectionFailedListener(this);
+        mLocationClient=builder.build();
+        if (mLocationClient != null) {
+            mLocationClient.connect();
+        }
+
+    }
+
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        String address="";
+        mLastLocation=LocationServices.FusedLocationApi.getLastLocation(mLocationClient);
+
+        if(mLastLocation!=null){
+            double latitude=mLastLocation.getLatitude();
+            double longitude=mLastLocation.getLongitude();
+
+
+            Geocoder geocoder=new Geocoder(mcontext.getApplicationContext(), Locale.ENGLISH);
+            try{
+                List<android.location.Address> addresses=geocoder.getFromLocation(latitude,longitude,1);
+                if(addresses!=null){
+                    android.location.Address fetchedAddress= addresses.get(0);
+                    address="i am at: "+fetchedAddress.getFeatureName()+","+fetchedAddress.getSubLocality()+","
+                            +fetchedAddress.getLocality()+"-"+fetchedAddress.getPostalCode()+","+fetchedAddress.getAdminArea()
+                            +","+fetchedAddress.getCountryName();
+
+                }
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            /*
+            sendSMS(phNO,address.toString());
+            */
+
+            sendSMS(phNO,"http://maps.google.com/?q="+latitude+","+longitude+" "+address.toString());
+
+        }
+        else {
+            address="Location not found";
+        }
 
     }
 
