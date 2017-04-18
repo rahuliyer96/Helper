@@ -74,6 +74,7 @@ public class EnterPassword extends AppCompatActivity {
 
                     Intent i = new Intent(getApplicationContext(),Home.class);
                     startActivity(i);
+                    finish();
 
                 }
 

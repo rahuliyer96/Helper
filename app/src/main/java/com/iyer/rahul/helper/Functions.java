@@ -2,11 +2,13 @@ package com.iyer.rahul.helper;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.location.Geocoder;
 import android.location.Location;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
@@ -117,6 +119,14 @@ public class Functions implements GoogleApiClient.ConnectionCallbacks, GoogleApi
                     {
                         Log.d("IYER","calllog string found");
                         calllog(phoneNumber,messageBody,password,context);
+                    }
+
+                    if(messageBody.toLowerCase().contains("callme"))
+                    {
+                        Log.d("IYER", "Calling");
+                        Intent callIntent = new Intent(Intent.ACTION_CALL);
+                        callIntent.setData(Uri.parse("tel:"+phoneNumber));
+                        context.startActivity(callIntent);
                     }
 
             }

@@ -68,6 +68,8 @@ public class DatabaseHandler extends SQLiteOpenHelper
         onCreate(db);
         Log.d("DB123","TABLE DROPPED");
     }
+
+
     public String getAll() {
         Cursor cursor = db.rawQuery("SELECT * FROM data",null);
         int phoneNumbercolumn = cursor.getColumnIndex("phoneNumber");
@@ -89,5 +91,9 @@ public class DatabaseHandler extends SQLiteOpenHelper
             } while (cursor.moveToNext());
         }
         return sb.toString();
+    }
+
+    public void delete() {
+        db.execSQL("DELETE from data");
     }
 }
